@@ -1,6 +1,6 @@
 <template>
   <v-app class="d-flex flex-column">
-    <v-main>
+    <v-main class="homepage">
       <v-container>
         <router-view />
       </v-container>
@@ -11,4 +11,8 @@
 <script>
 </script>
 
-<style></style>
+<style>
+.homepage {
+  background-color: #ab8c79;
+}
+</style>

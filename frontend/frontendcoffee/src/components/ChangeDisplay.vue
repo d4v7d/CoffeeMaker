@@ -1,17 +1,12 @@
 <template>
-    <div>
-
-    </div>
+    <v-card>
+        <v-card-title>Resultado de la Compra</v-card-title>
+    </v-card>
 </template>
 
 <script>
 export default {
-    setup() {
+    name: 'ChangeDisplay',
 
-
-        return {}
-    }
-}
+};
 </script>
-
-<style lang="scss" scoped></style>

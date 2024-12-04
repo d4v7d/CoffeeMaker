@@ -1,17 +1,84 @@
 <template>
-    <div>
-
-    </div>
+    <v-container>
+        <v-row>
+            <v-col cols="6" v-for="(coffee, index) in coffees" :key="coffee.name">
+                <v-card class="mx-auto" max-width="400">
+                    <v-img :src="getCoffeeImage(index)" height="270px" aspect-ratio="16/9" cover></v-img>
+                    <v-card-title>{{ coffee.name }}</v-card-title>
+                    <v-card-subtitle>Precio: ₡{{ coffee.price }}</v-card-subtitle>
+                    <v-card-text>
+                        <p>Cantidad disponible: {{ coffee.quantity }}</p>
+                    </v-card-text>
+                    <v-divider></v-divider>
+                    <v-card-actions>
+                        <v-btn icon @click="decrementQuantity(coffee)">
+                            <v-icon>mdi-minus</v-icon>
+                        </v-btn>
+                        <span>{{ coffee.selectedQuantity || 0 }}</span>
+                        <v-btn icon @click="incrementQuantity(coffee)">
+                            <v-icon>mdi-plus</v-icon>
+                        </v-btn>
+                        <v-spacer></v-spacer>
+                        <v-btn @click="addToCart(coffee)">Agregar al carrito</v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-col>
+        </v-row>
+    </v-container>
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
-    setup() {
-
-
-        return {}
-    }
-}
+    name: 'CoffeeList',
+    data() {
+        return {
+            coffees: [],
+        };
+    },
+    created() {
+        this.fetchCoffees();
+    },
+    methods: {
+        fetchCoffees() {
+            axios.get('https://localhost:7058/api/Coffee')
+                .then(response => {
+                    this.coffees = response.data;
+                    this.coffees.forEach(coffee => {
+                        coffee.selectedQuantity = 0;
+                    });
+                });
+        },
+        incrementQuantity(coffee) {
+            if (coffee.selectedQuantity < coffee.quantity) {
+                coffee.selectedQuantity++;
+            }
+        },
+        decrementQuantity(coffee) {
+            if (coffee.selectedQuantity > 0) {
+                coffee.selectedQuantity--;
+            }
+        },
+        getCoffeeImage(index) {
+            const images = [
+                require('@/assets/cafeAmericano.jpg'),
+                require('@/assets/capuchino.jpg'),
+                require('@/assets/cafeLatte.jpg'),
+                require('@/assets/mocachino.jpg'),
+            ];
+            return images[index];
+        },
+        addToCart(coffee) {
+            if (coffee.selectedQuantity > 0) {
+                this.$store.commit('ADD_TO_CART', {
+                    name: coffee.name,
+                    price: coffee.price,
+                    quantity: coffee.selectedQuantity,
+                });
+                coffee.selectedQuantity = 0;
+            }
+        },
+    },
+};
 </script>
-
-<style lang="scss" scoped></style>
