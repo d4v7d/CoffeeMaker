@@ -1,8 +1,10 @@
-﻿namespace CoffeeMaker.Presentation.Request
+﻿using CoffeeMaker.Domains.Entities;
+
+namespace CoffeeMaker.Presentation.Request
 {
     public class PurchaseRequest
     {
-        public Dictionary<string, int> SelectedCoffees { get; set; }
-        public Dictionary<int, int> PaymentInput { get; set; } // Valor y cantidad
+        public List<Coffee> SelectedCoffees { get; set; }
+        public List<Coin> PaymentInput { get; set; } 
     }
 }

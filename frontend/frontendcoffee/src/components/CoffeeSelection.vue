@@ -6,7 +6,7 @@
                 <v-list-item v-for="coffee in selectedCoffees" :key="coffee.name">
                     <v-list-item-content>
                         <v-list-item-title>{{ coffee.name }}</v-list-item-title>
-                        <v-list-item-subtitle>Cantidad: {{ coffee.selectedQuantity }}</v-list-item-subtitle>
+                        <v-list-item-subtitle>Cantidad: {{ coffee.quantity }}</v-list-item-subtitle>
                     </v-list-item-content>
                 </v-list-item>
             </v-list>
@@ -27,7 +27,8 @@ export default {
         },
         total() {
             return this.selectedCoffees.reduce((sum, coffee) => {
-                const quantity = coffee.selectedQuantity || 0;
+                console.log(coffee);
+                const quantity = coffee.quantity || 0;
                 const price = coffee.price || 0;
                 return sum + quantity * price;
             }, 0);

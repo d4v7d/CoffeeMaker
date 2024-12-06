@@ -24,6 +24,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<CoffeeService>();
+builder.Services.AddScoped<PaymentService>();
 
 var app = builder.Build();
 

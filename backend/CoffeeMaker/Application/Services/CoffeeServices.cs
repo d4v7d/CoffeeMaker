@@ -9,12 +9,12 @@ namespace CoffeeMaker.Application.Services
         public CoffeeService()
         {
             coffees = new List<Coffee>
-            {
-                new Coffee { Name = "Americano", Price = 950, Quantity = 10 },
-                new Coffee { Name = "Capuchino", Price = 1200, Quantity = 8 },
-                new Coffee { Name = "Latte", Price = 1350, Quantity = 10 },
-                new Coffee { Name = "Mocachino", Price = 1500, Quantity = 15 }
-            };
+                {
+                    new Coffee { Name = "Americano", Price = 950, Stock = 10, Quantity = 0 },
+                    new Coffee { Name = "Capuchino", Price = 1200, Stock = 8, Quantity = 0 },
+                    new Coffee { Name = "Latte", Price = 1350, Stock = 10 , Quantity = 0},
+                    new Coffee { Name = "Mocachino", Price = 1500, Stock = 15, Quantity = 0 }
+                };
         }
 
         public List<Coffee> GetAvailableCoffees()
@@ -22,36 +22,25 @@ namespace CoffeeMaker.Application.Services
             return coffees;
         }
 
-        public bool UpdateCoffeeStock(Dictionary<string, int> selectedCoffees)
+        public bool UpdateCoffeeStock(List<Coffee> selectedCoffees)
         {
             foreach (var item in selectedCoffees)
             {
-                var coffee = coffees.FirstOrDefault(c => c.Name == item.Key);
-                if (coffee == null || coffee.Quantity < item.Value)
+                var coffee = coffees.FirstOrDefault(c => c.Name == item.Name);
+                if (coffee != null)
                 {
-                    return false;
+                    coffee.Stock -= item.Quantity;
                 }
             }
-
-            foreach (var item in selectedCoffees)
-            {
-                var coffee = coffees.First(c => c.Name == item.Key);
-                coffee.Quantity -= item.Value;
-            }
-
             return true;
         }
 
-        public int CalculateTotalCost(Dictionary<string, int> selectedCoffees)
+        public int CalculateTotalCost(List<Coffee> selectedCoffees)
         {
             int totalCost = 0;
             foreach (var item in selectedCoffees)
             {
-                var coffee = coffees.FirstOrDefault(c => c.Name == item.Key);
-                if (coffee != null)
-                {
-                    totalCost += coffee.Price * item.Value;
-                }
+                totalCost += item.Price * item.Quantity;
             }
             return totalCost;
         }

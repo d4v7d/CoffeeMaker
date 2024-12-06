@@ -8,12 +8,13 @@ export default createStore({
         ADD_TO_CART(state, coffee) {
             const existingCoffee = state.selectedCoffees.find(c => c.name === coffee.name);
             if (existingCoffee) {
-                existingCoffee.selectedQuantity += coffee.quantity;
+                existingCoffee.quantity += coffee.quantity;
             } else {
                 state.selectedCoffees.push({
                     name: coffee.name,
                     price: coffee.price,
-                    selectedQuantity: coffee.quantity || 0,
+                    stock: coffee.stock,
+                    quantity: coffee.quantity,
                 });
             }
         },

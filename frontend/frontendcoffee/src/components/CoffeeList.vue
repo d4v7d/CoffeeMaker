@@ -7,14 +7,14 @@
                     <v-card-title>{{ coffee.name }}</v-card-title>
                     <v-card-subtitle>Precio: ₡{{ coffee.price }}</v-card-subtitle>
                     <v-card-text>
-                        <p>Cantidad disponible: {{ coffee.quantity }}</p>
+                        <p>Cantidad disponible: {{ coffee.stock }}</p>
                     </v-card-text>
                     <v-divider></v-divider>
                     <v-card-actions>
                         <v-btn icon @click="decrementQuantity(coffee)">
                             <v-icon>mdi-minus</v-icon>
                         </v-btn>
-                        <span>{{ coffee.selectedQuantity || 0 }}</span>
+                        <span>{{ coffee.quantity || 0 }}</span>
                         <v-btn icon @click="incrementQuantity(coffee)">
                             <v-icon>mdi-plus</v-icon>
                         </v-btn>
@@ -45,19 +45,16 @@ export default {
             axios.get('https://localhost:7058/api/Coffee')
                 .then(response => {
                     this.coffees = response.data;
-                    this.coffees.forEach(coffee => {
-                        coffee.selectedQuantity = 0;
-                    });
                 });
         },
         incrementQuantity(coffee) {
-            if (coffee.selectedQuantity < coffee.quantity) {
-                coffee.selectedQuantity++;
+            if (coffee.quantity < coffee.stock) {
+                coffee.quantity++;
             }
         },
         decrementQuantity(coffee) {
-            if (coffee.selectedQuantity > 0) {
-                coffee.selectedQuantity--;
+            if (coffee.quantity > 0) {
+                coffee.quantity--;
             }
         },
         getCoffeeImage(index) {
@@ -70,13 +67,14 @@ export default {
             return images[index];
         },
         addToCart(coffee) {
-            if (coffee.selectedQuantity > 0) {
+            if (coffee.quantity > 0) {
                 this.$store.commit('ADD_TO_CART', {
                     name: coffee.name,
                     price: coffee.price,
-                    quantity: coffee.selectedQuantity,
+                    stock: coffee.stock,
+                    quantity: coffee.quantity,
                 });
-                coffee.selectedQuantity = 0;
+                coffee.quantity = 0;
             }
         },
     },

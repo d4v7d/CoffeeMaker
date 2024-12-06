@@ -1,4 +1,6 @@
 ﻿using CoffeeMaker.Domains.Entities;
+using CoffeeMaker.Presentation.Response;
+using CoffeeMaker.Presentation.Request;
 
 namespace CoffeeMaker.Application.Services
 {
@@ -6,85 +8,102 @@ namespace CoffeeMaker.Application.Services
     {
         private List<Coin> coins;
         private readonly int[] Values = { 1000, 500, 100, 50, 25 };
+        private readonly CoffeeService coffeeService;
 
-        public PaymentService()
+        public PaymentService(CoffeeService coffeeService)
         {
+            this.coffeeService = coffeeService;
             coins = new List<Coin>
+                {
+                    new Coin { Value = 500, Quantity = 20 },
+                    new Coin { Value = 100, Quantity = 30 },
+                    new Coin { Value = 50, Quantity = 50 },
+                    new Coin { Value = 25, Quantity = 25 }
+                };
+        }
+
+        public ChangeResponse MakePurchase(PurchaseRequest request)
+        {
+            if (!ValidateData(request))
+                return new ChangeResponse { Message = "Invalid data" };
+
+            int totalPayment = CalculateTotalPayment(request.PaymentInput);
+            int totalCost = CalculateTotalCost(request.SelectedCoffees);
+
+            if (totalPayment < totalCost)
+                return new ChangeResponse { Message = "Insufficient payment" };
+
+            UpdateCoins(request.PaymentInput, true);
+            int changeAmount = totalPayment - totalCost;
+            List<Coin> change = CalculateChange(changeAmount);
+
+            if (change == null)
+                return new ChangeResponse { Message = "Unable to provide change" };
+
+            UpdateCoins(change, false);
+            UpdateCoffeeStock(request.SelectedCoffees);
+
+            return new ChangeResponse
             {
-                new Coin { Value = 500, Quantity = 20 },
-                new Coin { Value = 100, Quantity = 30 },
-                new Coin { Value = 50, Quantity = 50 },
-                new Coin { Value = 25, Quantity = 25 }
+                TotalChange = changeAmount,
+                ChangeBreakdown = change,
+                Message = "Purchase successful"
             };
         }
 
-        public bool IsOutOfService()
+        private bool ValidateData(PurchaseRequest request)
         {
-            return coins.All(c => c.Quantity == 0);
+            // Validate request data
+            return request.SelectedCoffees != null && request.PaymentInput != null;
         }
 
-        public bool ValidatePaymentInput(Dictionary<int, int> paymentInput)
+        private int CalculateTotalPayment(List<Coin> paymentInput)
         {
-            return paymentInput.Keys.All(k => Values.Contains(k));
+            return paymentInput.Sum(coin => coin.Value * coin.Quantity);
         }
 
-        public int CalculateTotalPayment(Dictionary<int, int> paymentInput)
+        private int CalculateTotalCost(List<Coffee> selectedCoffees)
         {
-            int totalPayment = 0;
-            foreach (var item in paymentInput)
+            return coffeeService.CalculateTotalCost(selectedCoffees);
+        }
+
+        private void UpdateCoins(List<Coin> paymentInput, bool isAdding)
+        {
+            // Update coins
+            foreach (var paymentCoin in paymentInput)
             {
-                totalPayment += item.Key * item.Value;
-            }
-            return totalPayment;
-        }
-
-        public Dictionary<int, int> CalculateChange(int changeAmount)
-        {
-            var changeBreakdown = new Dictionary<int, int>();
-            var sortedCoins = coins.OrderByDescending(c => c.Value).ToList();
-
-            foreach (var coin in sortedCoins)
-            {
-                int numberOfCoins = changeAmount / coin.Value;
-                if (numberOfCoins > 0)
+                var coin = coins.FirstOrDefault(c => c.Value == paymentCoin.Value);
+                if (coin != null)
                 {
-                    int coinsToGive = numberOfCoins <= coin.Quantity ? numberOfCoins : coin.Quantity;
-                    if (coinsToGive > 0)
+                    coin.Quantity += isAdding ? paymentCoin.Quantity : -paymentCoin.Quantity;
+                }
+            }
+        }
+
+        private List<Coin> CalculateChange(int changeAmount)
+        {
+            // Calculate change
+            List<Coin> change = new List<Coin>();
+            foreach (var value in Values)
+            {
+                if (changeAmount == 0) break;
+                var coin = coins.FirstOrDefault(c => c.Value == value && c.Quantity > 0);
+                if (coin != null)
+                {
+                    int numCoins = Math.Min(changeAmount / value, coin.Quantity);
+                    if (numCoins > 0)
                     {
-                        changeBreakdown[coin.Value] = coinsToGive;
-                        changeAmount -= coinsToGive * coin.Value;
-                        coin.Quantity -= coinsToGive;
+                        change.Add(new Coin { Value = value, Quantity = numCoins });
+                        changeAmount -= numCoins * value;
                     }
                 }
             }
-
-            if (changeAmount > 0)
-            {
-                return null;
-            }
-
-            return changeBreakdown;
+            return changeAmount == 0 ? change : null;
         }
 
-        public void AddPaymentToCoins(Dictionary<int, int> paymentInput)
+        private void UpdateCoffeeStock(List<Coffee> selectedCoffees)
         {
-            foreach (var item in paymentInput)
-            {
-                var coin = coins.FirstOrDefault(c => c.Value == item.Key);
-                if (coin != null)
-                {
-                    coin.Quantity += item.Value;
-                }
-                else
-                {
-                    coins.Add(new Coin { Value = item.Key, Quantity = item.Value });
-                }
-            }
-        }
-
-        public List<Coin> GetAvailableCoins()
-        {
-            return coins;
+            coffeeService.UpdateCoffeeStock(selectedCoffees);
         }
     }
 }
