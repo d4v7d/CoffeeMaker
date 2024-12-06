@@ -18,5 +18,8 @@ export default createStore({
                 });
             }
         },
+        CLEAR_CART(state) {
+            state.selectedCoffees = [];
+        },
     },
 });
