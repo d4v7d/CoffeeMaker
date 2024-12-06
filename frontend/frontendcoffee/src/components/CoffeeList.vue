@@ -19,7 +19,7 @@
                             <v-icon>mdi-plus</v-icon>
                         </v-btn>
                         <v-spacer></v-spacer>
-                        <v-btn @click="addToCart(coffee)">Agregar al carrito</v-btn>
+                        <v-btn @click="addToCart(coffee)">Agregar al pedido</v-btn>
                     </v-card-actions>
                 </v-card>
             </v-col>
@@ -36,6 +36,9 @@ export default {
         return {
             coffees: [],
         };
+    },
+    onMounted() {
+        this.fetchCoffees();
     },
     created() {
         this.fetchCoffees();

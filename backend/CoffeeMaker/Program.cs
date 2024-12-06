@@ -23,8 +23,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<CoffeeService>();
-builder.Services.AddScoped<PaymentService>();
+builder.Services.AddSingleton<CoffeeService>();
+builder.Services.AddSingleton<PaymentService>();
 
 var app = builder.Build();
 

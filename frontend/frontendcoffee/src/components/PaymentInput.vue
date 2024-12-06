@@ -42,6 +42,10 @@
             </v-card-actions>
         </v-card>
     </v-dialog>
+
+    <change-display ref="changeDisplay" :total-amount="total" :payment-amount="payment"
+        :total-change="changeData.totalChange" :change-breakdown="changeData.changeBreakdown"
+        :message="changeData.message" @refresh="refreshPage"></change-display>
 </template>
 
 <script>
@@ -66,12 +70,20 @@ export default {
                 1000: 0,
             },
             selectedCoffees: this.$store.state.selectedCoffees,
+            changeData: {
+                totalChange: 0,
+                changeBreakdown: [],
+                message: '',
+            },
         };
     },
     computed: {
         canPay() {
             return this.payment >= this.total;
         },
+    },
+    created() {
+        this.clearPayment();
     },
     methods: {
         addToPayment(amount) {
@@ -113,8 +125,16 @@ export default {
             })
                 .then(response => {
                     console.log('Compra exitosa:', response.data);
-                    this.clearPayment();
+                    this.changeData = {
+                        totalChange: response.data.totalChange,
+                        changeBreakdown: response.data.changeBreakdown,
+                        message: response.data.message,
+                    };
+                    this.$store.commit('CLEAR_CART');
                     this.dialog = false;
+                    this.$nextTick(() => {
+                        this.$refs.changeDisplay.openDialog();
+                    });
                 })
                 .catch(error => {
                     console.error('Error durante la compra:', error.response ? error.response.data : error.message);
